@@ -1,0 +1,74 @@
+site_name: ETSI WPM Suite - User Guide & Wiki
+site_description: Official Operational Manual & Technical Wiki for ETSI WPM Unified Suite
+site_author: ETSI - Secretariat General & Technical Committees
+site_url: http://localhost:8081/wiki/
+docs_dir: docs
+site_dir: static/wiki
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Light mode - ETSI official branding
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: light-blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tooltips
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Getting Started: quick-start.md
+  - Standards & Consultation:
+      - Catalog & Advanced Search: modules/catalog-search.md
+      - Detailed Deliverable Profile: modules/deliverable-profile.md
+  - Administration & Back-Office:
+      - Admin Console: modules/admin-console.md
+      - Number Allocation Engine: modules/numbering-allocation.md
+      - Revisions & Derivation Engine: modules/revisions-derivation.md
+  - Planning & Spectrum:
+      - Statutory Schedule & Perfect Plan: modules/statutory-schedule.md
+      - Radio Spectrum & EU Mandates: modules/spectrum-mandates.md
+  - Interoperability & Sync:
+      - Portal & Database Synchronization: modules/portal-sync-dsdb.md
+  - Institutional Reference:
+      - ETSI Standards Glossary & FAQ: glossary-faq.md
+      - Technical Architecture & Docker: modules/technical-architecture.md

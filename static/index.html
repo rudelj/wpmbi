@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETSI WPM Unified Suite - Work Programme Management</title>
+  <link rel="icon" type="image/png" href="static/etsi_logo.png">
+  <link rel="stylesheet" href="static/style.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="top-progress-bar"></div>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="etsi-header">
+    <div class="brand-section">
+      <img src="static/etsi_logo.png" alt="ETSI" class="etsi-brand-logo" onclick="switchTab('catalog')" title="ETSI Work Programme Management">
+      <div class="brand-divider"></div>
+      <div class="app-title-group">
+        <h1 class="app-title">
+          WPM Unified Management Suite
+          <span class="app-version-pill" style="background:#0284c7; color:#fff; border-color:#0284c7;">v3.0 Unified</span>
+        </h1>
+        <span class="app-subtitle">European Telecommunications Standards Institute &bull; Secretariat General &amp; Technical Bodies</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="status-indicator" title="Local SQLite Database &amp; Gateway Active">
+        <span class="status-dot"></span>
+        <span>System Operational</span>
+      </div>
+      <button class="btn-header-action btn-primary" onclick="openCreateModal()">
+        <i data-lucide="plus-circle" style="width:15px; height:15px;"></i>
+        <span>New Work Item</span>
+      </button>
+      <button class="btn-header-action" onclick="triggerPortalSync()" title="Synchronize with ETSI public portal">
+        <i data-lucide="refresh-cw" style="width:15px; height:15px;"></i>
+        <span>Sync Portal</span>
+      </button>
+      <div style="display:inline-flex; gap:4px;">
+        <button class="btn-header-action" onclick="exportData('csv')" title="Export to CSV">
+          <i data-lucide="download" style="width:15px; height:15px;"></i>
+          <span>CSV</span>
+        </button>
+        <button class="btn-header-action" onclick="exportData('json')" title="Export to JSON">
+          <i data-lucide="code" style="width:15px; height:15px;"></i>
+          <span>JSON</span>
+        </button>
+      </div>
+      <a href="wiki/" target="_blank" rel="noopener noreferrer" class="btn-header-action" title="Open User Guide & Wiki" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+        <i data-lucide="book-open" style="width:15px; height:15px;"></i>
+        <span>User Guide &amp; Wiki</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==================== NAVIGATION TABS ==================== -->
+  <nav class="nav-tabs-bar">
+    <div class="nav-tab-item active" id="tab-btn-catalog" onclick="switchTab('catalog')">
+      <i data-lucide="layers" style="width:16px; height:16px;"></i>
+      <span>Catalog &amp; Search</span>
+    </div>
+    <div class="nav-tab-item" id="tab-btn-admin" onclick="switchTab('admin')">
+      <i data-lucide="shield" style="width:16px; height:16px;"></i>
+      <span>Admin Console</span>
+    </div>
+    <div class="nav-tab-item" id="tab-btn-numbering" onclick="switchTab('numbering')">
+      <i data-lucide="hash" style="width:16px; height:16px;"></i>
+      <span>Number Allocation</span>
+    </div>
+    <div class="nav-tab-item" id="tab-btn-clone" onclick="switchTab('clone')">
+      <i data-lucide="copy" style="width:16px; height:16px;"></i>
+      <span>Revisions &amp; Derivation</span>
+    </div>
+    <div class="nav-tab-item" id="tab-btn-schedule" onclick="switchTab('schedule')">
+      <i data-lucide="calendar" style="width:16px; height:16px;"></i>
+      <span>Statutory Schedule</span>
+    </div>
+    <div class="nav-tab-item" id="tab-btn-freq" onclick="switchTab('freq')">
+      <i data-lucide="radio" style="width:16px; height:16px;"></i>
+      <span>Spectrum &amp; EU Mandates</span>
+    </div>
+  </nav>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="main-wrapper">
+
+    <!-- KPI Metrics -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <h4>Active Work Items</h4>
+          <div class="kpi-value" id="kpi-total-items">-</div>
+        </div>
+        <div class="kpi-icon-wrap navy">
+          <i data-lucide="file-text" style="width:22px; height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <h4>Technical Bodies</h4>
+          <div class="kpi-value" id="kpi-tbs">10</div>
+        </div>
+        <div class="kpi-icon-wrap blue">
+          <i data-lucide="users" style="width:22px; height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <h4>Published Standards</h4>
+          <div class="kpi-value" id="kpi-published">-</div>
+        </div>
+        <div class="kpi-icon-wrap green">
+          <i data-lucide="check-circle-2" style="width:22px; height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <h4>Under Enquiry / Vote</h4>
+          <div class="kpi-value" id="kpi-approval" style="color:var(--warning);">-</div>
+        </div>
+        <div class="kpi-icon-wrap orange">
+          <i data-lucide="clock" style="width:22px; height:22px;"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-content">
+          <h4>Closed / Revised Items</h4>
+          <div class="kpi-value" id="kpi-stopped" style="color:var(--text-muted);">-</div>
+        </div>
+        <div class="kpi-icon-wrap" style="background:#f1f5f9; color:#64748b;">
+          <i data-lucide="archive" style="width:22px; height:22px;"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 1: CATALOG & SEARCH ==================== -->
+    <section id="view-catalog" class="content-section">
+      <!-- Modern Search & Filter Card -->
+      <div class="search-filter-card">
+        <div class="search-card-header">
+          <div class="search-card-title">
+            <div class="search-title-icon">
+              <i data-lucide="sliders-horizontal" style="width:18px; height:18px;"></i>
+            </div>
+            <div>
+              <h3>Advanced Search &amp; Filters</h3>
+              <p>Search and filter ETSI work programme deliverables by keywords, reference, technical body, or statutory status.</p>
+            </div>
+          </div>
+          <div class="search-quick-info">
+            <span class="active-badge-pill" id="active-filter-indicator">Real-time Search</span>
+          </div>
+        </div>
+
+        <div class="search-fields-grid">
+          <div class="search-field-item">
+            <label for="filter-q">
+              <i data-lucide="search" style="width:13px; height:13px;"></i>
+              <span>Text or Reference</span>
+            </label>
+            <div class="input-with-icon-wrapper">
+              <i data-lucide="search" class="field-icon-left"></i>
+              <input type="text" id="filter-q" class="modern-input" placeholder="e.g. 303645, CYBER, EN 301 489, IoT, 5G..." onkeydown="if(event.key==='Enter') executeSearch(true)">
+              <button class="input-clear-btn" type="button" onclick="document.getElementById('filter-q').value=''; executeSearch(true);" title="Clear search">
+                <i data-lucide="x" style="width:13px; height:13px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="search-field-item">
+            <label for="filter-type">
+              <i data-lucide="file-code" style="width:13px; height:13px;"></i>
+              <span>Deliverable Type</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="filter-type" class="modern-select" onchange="executeSearch(true)">
+                <option value="">All Deliverable Types</option>
+                <option value="EN">EN &bull; European Standard</option>
+                <option value="TS">TS &bull; Technical Specification</option>
+                <option value="TR">TR &bull; Technical Report</option>
+                <option value="ES">ES &bull; ETSI Standard</option>
+                <option value="EG">EG &bull; ETSI Guide</option>
+                <option value="SR">SR &bull; Special Report</option>
+                <option value="GS">GS &bull; Group Specification</option>
+                <option value="ETS">ETS &bull; Legacy Telecommunications Std</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-field-item">
+            <label for="filter-tb">
+              <i data-lucide="users-2" style="width:13px; height:13px;"></i>
+              <span>Technical Body</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="filter-tb" class="modern-select" onchange="executeSearch(true)">
+                <option value="">All Technical Bodies</option>
+                <option value="CYBER">CYBER &bull; Cyber Security</option>
+                <option value="ERM">ERM &bull; EMC &amp; Radio Spectrum</option>
+                <option value="3GPP">3GPP &bull; Mobile Standards</option>
+                <option value="ISG ENI">ISG ENI &bull; Cognitive AI SLA</option>
+                <option value="ISG NFV">ISG NFV &bull; Network Functions</option>
+                <option value="DECT">DECT &bull; Cordless Telecomms</option>
+                <option value="SES">SES &bull; Satellite Systems</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-field-item">
+            <label for="filter-status">
+              <i data-lucide="activity" style="width:13px; height:13px;"></i>
+              <span>Status / Milestone</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="filter-status" class="modern-select" onchange="executeSearch(true)">
+                <option value="">All Active Statuses</option>
+                <option value="Published">Published</option>
+                <option value="Drafting">Drafting</option>
+                <option value="Public Enquiry">Public Enquiry</option>
+                <option value="Vote">Under Vote</option>
+                <option value="Stopped">Stopped / Revised</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-toolbar-bottom">
+          <div class="search-toolbar-left">
+            <label class="modern-checkbox-pill" for="check-include-stopped">
+              <input type="checkbox" id="check-include-stopped" onchange="executeSearch(true)">
+              <span class="custom-checkbox"></span>
+              <span class="checkbox-text">
+                <i data-lucide="archive" style="width:14px; height:14px;"></i>
+                <span>Include Closed Deliverables</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="search-toolbar-right">
+            <button class="btn btn-secondary" onclick="resetSearchFilters()" title="Reset all criteria">
+              <i data-lucide="rotate-ccw" style="width:14px; height:14px;"></i>
+              <span>Reset</span>
+            </button>
+            <button class="btn btn-secondary btn-fav-filter" id="btn-toggle-favorites" onclick="toggleFavoritesOnly()" title="Filter only my favorites">
+              <i data-lucide="star" style="width:15px; height:15px;"></i>
+              <span id="fav-btn-label">Favorites</span>
+            </button>
+            <button class="btn btn-primary" onclick="executeSearch(true)">
+              <i data-lucide="search" style="width:15px; height:15px;"></i>
+              <span>Search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table Card -->
+      <div class="table-card">
+        <div class="table-header-info">
+          <div class="table-header-title-group">
+            <div class="table-title-icon">
+              <i data-lucide="database" style="width:18px; height:18px;"></i>
+            </div>
+            <div>
+              <h3>ETSI Standards &amp; Deliverables Catalog</h3>
+              <span class="table-subtitle" id="table-summary-count">Loading Work Items...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="etsi-table" id="items-table">
+            <thead>
+              <tr>
+                <th style="width:40px; text-align:center;">⭐</th>
+                <th style="width:180px;">Reference &amp; ID</th>
+                <th style="width:80px;">Ver.</th>
+                <th style="width:110px;">Body</th>
+                <th>Deliverable Title</th>
+                <th style="width:150px;">Status</th>
+                <th style="width:90px; text-align:center;">Download</th>
+                <th style="width:120px; text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="items-table-body">
+              <tr>
+                <td colspan="8" style="text-align:center; padding:36px; color:var(--text-muted);">
+                  Loading standards from database...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: ADMIN CONSOLE ==================== -->
+    <section id="view-admin" class="content-section" style="display:none;">
+      <div class="table-card">
+        <div class="table-header-info">
+          <div>
+            <h3>Secretariat General Administration Console</h3>
+            <span class="table-subtitle">Operational management of Work Items, revisions, mandates, and parent deliverable statutory retirement</span>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+              <i data-lucide="plus-circle" style="width:14px; height:14px;"></i>
+              <span>Create Official Work Item</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="etsi-table">
+            <thead>
+              <tr>
+                <th style="width:180px;">Work Item ID</th>
+                <th style="width:160px;">Statutory Reference</th>
+                <th style="width:90px;">Body</th>
+                <th>Official Title</th>
+                <th style="width:130px;">Current Status</th>
+                <th style="width:90px; text-align:center;">Stopped</th>
+                <th style="width:170px; text-align:right;">Admin Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body">
+              <!-- Admin rows injected by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: NUMBER ALLOCATION ==================== -->
+    <section id="view-numbering" class="content-section" style="display:none;">
+      <div class="card" style="max-width:860px; margin:0 auto;">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="hash" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+            <h3>Official ETSI Number Generator &amp; Allocation</h3>
+          </div>
+          <p class="card-desc">
+            Direct implementation of statutory ETSI numbering rules. Modern standard deliverables such as EN, TS, TR, ES, EG, SR are allocated numbers &ge; 1000. ISG Group Specifications and legacy European Telecommunications Standards are strictly &lt; 1000.
+          </p>
+        </div>
+
+        <div class="card-body">
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label for="num-doc-type">Deliverable Type</label>
+              <select id="num-doc-type" onchange="runNumberGenerator()">
+                <option value="EN">EN - European Standard</option>
+                <option value="TS">TS - Technical Specification</option>
+                <option value="TR">TR - Technical Report</option>
+                <option value="ES">ES - ETSI Standard</option>
+                <option value="EG">EG - ETSI Guide</option>
+                <option value="SR">SR - Special Report</option>
+                <option value="GS">GS - Group Specification ISG</option>
+                <option value="ETS">ETS - European Telecomm. Std</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="num-tb">Associated Technical Body</label>
+              <select id="num-tb" onchange="runNumberGenerator()">
+                <option value="CYBER">CYBER - Cyber Security</option>
+                <option value="ERM">ERM - EMC and Radio Spectrum</option>
+                <option value="3GPP">3GPP - 3rd Generation Partnership</option>
+                <option value="ISG ENI">ISG ENI - Experiential Networked Intelligence</option>
+                <option value="ISG NFV">ISG NFV - Network Functions Virtualisation</option>
+                <option value="DECT">DECT - Cordless Telecommunications</option>
+                <option value="SES">SES - Satellite Systems</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="number-result-box" style="margin-top:24px; padding:20px; background:#f8fafc; border:1px solid var(--border-color); border-radius:12px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Recommended Official Number</div>
+            <div style="display:flex; align-items:baseline; gap:16px; margin:10px 0;">
+              <span id="gen-assigned-number" style="font-size:32px; font-weight:800; color:var(--etsi-navy); font-family:monospace;">-</span>
+              <span id="gen-formatted-ref" style="font-size:18px; font-weight:600; color:var(--etsi-blue);">-</span>
+            </div>
+            <div id="gen-rule-applied" style="font-size:13px; color:var(--text-main); margin-bottom:16px;"></div>
+
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">Consecutive Available Numbers:</div>
+            <div id="gen-candidate-pills" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="useGeneratedNumberInCreation()">
+              <i data-lucide="arrow-right-circle" style="width:15px; height:15px;"></i>
+              <span>Create Work Item with this Number</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: REVISIONS & CLONING ==================== -->
+    <section id="view-clone" class="content-section" style="display:none;">
+      <div class="card" style="max-width:860px; margin:0 auto;">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="copy" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+            <h3>Work Item Derivation &amp; Cloning Engine</h3>
+          </div>
+          <p class="card-desc">
+            Statutory standard derivation: generate a Revision, a Split, a Transfer to another Technical Body, or a Standard Duplicate.
+          </p>
+        </div>
+
+        <div class="card-body">
+          <div class="form-grid" style="grid-template-columns: 1fr;">
+            <div class="form-group">
+              <label for="clone-source-wki">Source Work Item</label>
+              <select id="clone-source-wki" onchange="prefillCloneModal()">
+                <option value="">Select a source Work Item...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
+            <div class="form-group">
+              <label for="clone-type-select">Derivation Type</label>
+              <select id="clone-type-select">
+                <option value="revision">Revision - Automatic statutory retirement of parent deliverable</option>
+                <option value="split">Split - Division into consecutive sub-parts</option>
+                <option value="transfer">Transfer - Reassign to another Technical Body</option>
+                <option value="duplicate">Standard Duplication - Clean project copy</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="clone-sched-option">Schedule &amp; Milestone Strategy</label>
+              <select id="clone-sched-option">
+                <option value="default">Compute statutory Perfect Plan from today</option>
+                <option value="original">Retain original target dates</option>
+                <option value="none">No initial milestones</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
+            <div class="form-group">
+              <label for="clone-new-tb">New Technical Body</label>
+              <input type="text" id="clone-new-tb" placeholder="e.g. CYBER, ERM...">
+            </div>
+            <div class="form-group">
+              <label for="clone-new-docnum">New Document Number</label>
+              <input type="text" id="clone-new-docnum" placeholder="Leave empty for auto-increment">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label for="clone-new-title">New Title Part 1</label>
+            <input type="text" id="clone-new-title" placeholder="Leave empty to retain original title">
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:16px;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="clone-retain-comments">
+              <span>Transfer audit history notes and remarks</span>
+            </label>
+          </div>
+
+          <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="submitCloneWorkItem()">
+              <i data-lucide="check" style="width:15px; height:15px;"></i>
+              <span>Execute Statutory Derivation</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: STATUTORY SCHEDULE ==================== -->
+    <section id="view-schedule" class="content-section" style="display:none;">
+      <div class="card" style="max-width:880px; margin:0 auto;">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="calendar" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+            <h3>Statutory Perfect Plan Simulator &amp; Milestone Timeline</h3>
+          </div>
+          <p class="card-desc">
+            Automated cascading milestone calculation based on codified ETSI statutory durations: 
+            Drafting &rarr; TB Adoption &rarr; Secretariat Handover &rarr; Public Enquiry &rarr; Vote &rarr; Publication.
+          </p>
+        </div>
+
+        <div class="card-body">
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; align-items:flex-end;">
+            <div class="form-group">
+              <label for="plan-doc-type">Deliverable Type</label>
+              <select id="plan-doc-type">
+                <option value="EN">EN - European Standard</option>
+                <option value="TS">TS - Technical Specification</option>
+                <option value="TR">TR - Technical Report</option>
+                <option value="ES">ES - ETSI Standard</option>
+                <option value="EG">EG - ETSI Guide</option>
+                <option value="GS">GS - Group Specification ISG</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="plan-start-date">Start Date</label>
+              <input type="date" id="plan-start-date">
+            </div>
+
+            <div class="form-group">
+              <button class="btn btn-primary" style="width:100%;" onclick="calculatePlan()">
+                <i data-lucide="play" style="width:15px; height:15px;"></i>
+                <span>Calculate Schedule</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top:24px;">
+            <table class="etsi-table">
+              <thead>
+                <tr>
+                  <th style="width:50px;">Pos</th>
+                  <th style="width:130px;">Code</th>
+                  <th>Statutory Milestone</th>
+                  <th style="width:100px; text-align:center;">Duration</th>
+                  <th style="width:140px;">Target Date</th>
+                </tr>
+              </thead>
+              <tbody id="plan-results-body">
+                <tr>
+                  <td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">
+                    Select a deliverable type and click Calculate Schedule.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 6: SPECTRUM & MANDATES ==================== -->
+    <section id="view-freq" class="content-section" style="display:none;">
+      <div class="card" style="max-width:980px; margin:0 auto;">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div class="card-title">
+              <i data-lucide="radio" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+              <h3>Radio Spectrum Allocations &amp; European Commission Mandates</h3>
+            </div>
+            <p class="card-desc">
+              Surveillance and allocation of radio frequency bands under the Radio Equipment Directive and mapping to European Commission standardisation requests.
+            </p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="openAddFreqModal()">
+              <i data-lucide="plus" style="width:14px; height:14px;"></i>
+              <span>Assign Radio Frequency</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h4 style="margin-bottom:12px; color:var(--etsi-navy);">Radio Frequency Bands</h4>
+          <table class="etsi-table" style="margin-bottom:32px;">
+            <thead>
+              <tr>
+                <th style="width:180px;">Associated Work Item</th>
+                <th style="width:120px;">Low Freq</th>
+                <th style="width:120px;">High Freq</th>
+                <th style="width:80px;">Unit</th>
+                <th>Radio Service &amp; Application</th>
+              </tr>
+            </thead>
+            <tbody id="freq-table-body">
+              <!-- Injected by app.js -->
+            </tbody>
+          </table>
+
+          <h4 style="margin-bottom:12px; color:var(--etsi-navy);">European Standardisation Mandates</h4>
+          <table class="etsi-table">
+            <thead>
+              <tr>
+                <th style="width:180px;">Associated Work Item</th>
+                <th style="width:130px;">Mandate Code</th>
+                <th style="width:180px;">European Directive</th>
+                <th>Statutory Mandate Scope &amp; Description</th>
+              </tr>
+            </thead>
+            <tbody id="mandates-table-body">
+              <!-- Injected by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== DRAWER: SLIDE-OVER DETAIL PANEL ==================== -->
+  <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
+  <aside id="drawer-panel" class="drawer-panel">
+    <div class="drawer-header">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2 id="drawer-ref-title" style="margin:0; font-size:18px; color:var(--etsi-navy);">-</h2>
+          <span id="drawer-version-pill" class="badge">v1.1.1</span>
+        </div>
+        <div id="drawer-status-pill" style="margin-top:4px;"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="drawer-fav-btn" class="btn-icon" onclick="toggleCurrentDrawerFavorite()" title="Add to favorites">
+          <i data-lucide="star" style="width:18px; height:18px;"></i>
+        </button>
+        <button class="btn-icon" onclick="closeDrawer()" title="Close">
+          <i data-lucide="x" style="width:20px; height:20px;"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick action links in drawer -->
+    <div style="padding:12px 24px; background:#f8fafc; border-bottom:1px solid var(--border-color); display:flex; gap:8px; flex-wrap:wrap;">
+      <a id="drawer-pdf-link" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:12px; padding:6px 12px;">
+        <i data-lucide="file-text" style="width:14px; height:14px; color:#dc2626;"></i>
+        <span>Download Official PDF</span>
+      </a>
+      <a id="drawer-word-link" href="#" target="_blank" class="btn btn-secondary" style="display:none; font-size:12px; padding:6px 12px;">
+        <i data-lucide="archive" style="width:14px; height:14px; color:#0284c7;"></i>
+        <span>Word Source</span>
+      </a>
+      <button class="btn btn-secondary" onclick="cloneCurrentFromDrawer()" style="font-size:12px; padding:6px 12px;">
+        <i data-lucide="copy" style="width:14px; height:14px;"></i>
+        <span>Revise / Clone</span>
+      </button>
+    </div>
+
+    <div class="drawer-content" id="drawer-body">
+      <!-- Injected by app.js -->
+      <div style="text-align:center; padding:32px; color:var(--text-muted);">Loading detail...</div>
+    </div>
+  </aside>
+
+  <!-- ==================== MODAL: CREATE WORK ITEM ==================== -->
+  <div id="modal-create-backdrop" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i data-lucide="plus-circle" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+          <h3 style="margin:0;">New Official Work Item</h3>
+        </div>
+        <button class="btn-icon" onclick="closeCreateModal()"><i data-lucide="x" style="width:18px; height:18px;"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-create-wi" onsubmit="event.preventDefault(); submitCreateWorkItem();">
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="form-group">
+              <label for="c-doc-type">Deliverable Type *</label>
+              <select id="c-doc-type" required onchange="handleCreateTypeChange()">
+                <option value="EN">EN - European Standard</option>
+                <option value="TS">TS - Technical Specification</option>
+                <option value="TR">TR - Technical Report</option>
+                <option value="ES">ES - ETSI Standard</option>
+                <option value="EG">EG - ETSI Guide</option>
+                <option value="SR">SR - Special Report</option>
+                <option value="GS">GS - Group Specification</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="c-doc-number">Document Number *</label>
+              <input type="text" id="c-doc-number" placeholder="e.g. 303645 or 024" required>
+            </div>
+            <div class="form-group">
+              <label for="c-tb">Technical Body *</label>
+              <select id="c-tb" required>
+                <option value="CYBER">CYBER - Cyber Security</option>
+                <option value="ERM">ERM - EMC &amp; Radio Spectrum</option>
+                <option value="3GPP">3GPP - 3rd Generation Partnership</option>
+                <option value="ISG ENI">ISG ENI - Cognitive SLA</option>
+                <option value="ISG NFV">ISG NFV - Network Functions</option>
+                <option value="DECT">DECT - Cordless Telecomms</option>
+                <option value="SES">SES - Satellite Systems</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label for="c-title-part1">Statutory Title - Part 1 *</label>
+            <input type="text" id="c-title-part1" placeholder="e.g. Cyber Security for Consumer Internet of Things" required>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top:14px;">
+            <div class="form-group">
+              <label for="c-title-part2">Title - Part 2</label>
+              <input type="text" id="c-title-part2" placeholder="e.g. Baseline Requirements">
+            </div>
+            <div class="form-group">
+              <label for="c-title-part3">Title - Part 3</label>
+              <input type="text" id="c-title-part3" placeholder="e.g. Device Testing Protocol">
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top:14px;">
+            <div class="form-group">
+              <label for="c-rapporteur-name">Rapporteur Name *</label>
+              <input type="text" id="c-rapporteur-name" placeholder="e.g. Dr. Alex Vance" required>
+            </div>
+            <div class="form-group">
+              <label for="c-rapporteur-email">Rapporteur Email</label>
+              <input type="email" id="c-rapporteur-email" placeholder="a.vance@etsi.org">
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top:14px;">
+            <div class="form-group">
+              <label for="c-support-name">Technical Officer / Support *</label>
+              <input type="text" id="c-support-name" placeholder="e.g. Claire Martin" required>
+            </div>
+            <div class="form-group">
+              <label for="c-support-email">Support Officer Email</label>
+              <input type="email" id="c-support-email" placeholder="claire.martin@etsi.org">
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:14px;">
+            <div class="form-group">
+              <label for="c-standstill">Statutory Standstill</label>
+              <select id="c-standstill">
+                <option value="NO">No</option>
+                <option value="YES">Yes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="c-version">Initial Version</label>
+              <input type="text" id="c-version" value="v1.1.1">
+            </div>
+            <div class="form-group">
+              <label for="c-mandate">European Mandate</label>
+              <input type="text" id="c-mandate" placeholder="e.g. M/585, M/536">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label for="c-scope">Scope &amp; Purpose</label>
+            <textarea id="c-scope" rows="3" placeholder="Technical objectives, normative requirements, and target scope..."></textarea>
+          </div>
+
+          <div style="margin-top:14px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="checkbox" id="c-harmonized">
+              <span>Harmonised Standard</span>
+            </label>
+          </div>
+
+          <div class="modal-footer" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="check" style="width:15px; height:15px;"></i>
+              <span>Create &amp; Schedule Deliverable</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD FREQUENCY ==================== -->
+  <div id="modal-freq-backdrop" class="modal-backdrop">
+    <div class="modal-card" style="max-width:540px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i data-lucide="radio" style="color:var(--etsi-navy); width:20px; height:20px;"></i>
+          <h3 style="margin:0;">Assign Radio Frequency Band</h3>
+        </div>
+        <button class="btn-icon" onclick="closeAddFreqModal()"><i data-lucide="x" style="width:18px; height:18px;"></i></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="event.preventDefault(); submitAddFrequency();">
+          <div class="form-group">
+            <label for="freq-wki-select">Associated Work Item</label>
+            <select id="freq-wki-select" required></select>
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:12px;">
+            <div class="form-group">
+              <label for="freq-low">Low Freq *</label>
+              <input type="number" step="0.001" id="freq-low" placeholder="e.g. 868.0" required>
+            </div>
+            <div class="form-group">
+              <label for="freq-high">High Freq *</label>
+              <input type="number" step="0.001" id="freq-high" placeholder="e.g. 868.6" required>
+            </div>
+            <div class="form-group">
+              <label for="freq-unit">Unit</label>
+              <select id="freq-unit">
+                <option value="MHz">MHz</option>
+                <option value="GHz">GHz</option>
+                <option value="kHz">kHz</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <label for="freq-app">Radio Service / Application</label>
+            <input type="text" id="freq-app" placeholder="e.g. Short Range Devices IoT" required>
+          </div>
+          <div class="modal-footer" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn btn-secondary" onclick="closeAddFreqModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Frequency Allocation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Client Script -->
+  <script src="static/app.js"></script>
+</body>
+</html>
