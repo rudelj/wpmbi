@@ -6,6 +6,7 @@ let currentItems = [];
 let selectedWkiId = null;
 let activeTab = "catalog";
 let onlyFavoritesFilter = false;
+const API_BASE = window.location.pathname.replace(/\/(index\.html)?$/, '').replace(/\/+$/, '');
 
 // Progress Bar Helper
 function startProgress() {
@@ -88,7 +89,7 @@ function switchTab(tabId) {
 // Fetch KPI Metrics
 async function fetchKPIs() {
   try {
-    const res = await fetch("/api/kpis");
+    const res = await fetch(`${API_BASE}/api/kpis`);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -127,7 +128,7 @@ async function executeSearch(resetOffset = true) {
     if (onlyFavoritesFilter) params.set("only_favorites", "true");
     params.set("limit", "100");
 
-    const res = await fetch(`/api/work-items?${params.toString()}`);
+    const res = await fetch(`${API_BASE}/api/work-items?${params.toString()}`);
     if (!res.ok) throw new Error("Search query failed.");
 
     const data = await res.json();
@@ -341,7 +342,7 @@ function renderAdminTable(items) {
 // Favorites Toggle
 async function toggleFavorite(wkiId, docNumber, title, tb, status) {
   try {
-    const res = await fetch("/api/favorites/toggle", {
+    const res = await fetch(`${API_BASE}/api/favorites/toggle`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -382,7 +383,7 @@ async function openDrawer(wkiId) {
   lucide.createIcons();
 
   try {
-    const res = await fetch(`/api/work-items/${encodeURIComponent(wkiId)}`);
+    const res = await fetch(`${API_BASE}/api/work-items/${encodeURIComponent(wkiId)}`);
     if (!res.ok) throw new Error("Deliverable not found.");
     const wi = await res.json();
 
@@ -622,7 +623,7 @@ async function submitDrawerRemark(wkiId) {
   if (!textEl || !textEl.value.trim()) return;
 
   try {
-    const res = await fetch(`/api/work-items/${encodeURIComponent(wkiId)}/remarks`, {
+    const res = await fetch(`${API_BASE}/api/work-items/${encodeURIComponent(wkiId)}/remarks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -646,7 +647,7 @@ async function runNumberGenerator() {
   const tb = document.getElementById("num-tb")?.value || "CYBER";
 
   try {
-    const res = await fetch("/api/numbering/next", {
+    const res = await fetch(`${API_BASE}/api/numbering/next`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ doc_type: docType, technical_body: tb })
@@ -728,7 +729,7 @@ async function submitCloneWorkItem() {
 
   startProgress();
   try {
-    const res = await fetch(`/api/work-items/${encodeURIComponent(sourceWki)}/clone`, {
+    const res = await fetch(`${API_BASE}/api/work-items/${encodeURIComponent(sourceWki)}/clone`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -765,7 +766,7 @@ async function calculatePlan() {
   const startDate = document.getElementById("plan-start-date").value || new Date().toISOString().split("T")[0];
 
   try {
-    const res = await fetch("/api/schedule/perfect-plan", {
+    const res = await fetch(`${API_BASE}/api/schedule/perfect-plan`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ doc_type: docType, start_date: startDate })
@@ -798,7 +799,7 @@ async function loadFrequenciesAndMandates() {
 
   try {
     const details = await Promise.all(
-      currentItems.slice(0, 15).map(it => fetch(`/api/work-items/${encodeURIComponent(it.wki_id)}`).then(r => r.json()))
+      currentItems.slice(0, 15).map(it => fetch(`${API_BASE}/api/work-items/${encodeURIComponent(it.wki_id)}`).then(r => r.json()))
     );
 
     let allFreqs = [];
@@ -862,7 +863,7 @@ async function submitAddFrequency() {
   const app = document.getElementById("freq-app").value.trim();
 
   try {
-    const res = await fetch(`/api/work-items/${encodeURIComponent(wkiId)}/frequencies`, {
+    const res = await fetch(`${API_BASE}/api/work-items/${encodeURIComponent(wkiId)}/frequencies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -922,7 +923,7 @@ async function submitCreateWorkItem() {
 
   startProgress();
   try {
-    const res = await fetch("/api/work-items", {
+    const res = await fetch(`${API_BASE}/api/work-items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -976,7 +977,7 @@ async function triggerPortalSync() {
     if (tb) params.set("tb", tb);
     if (docType) params.set("doc_type", docType);
 
-    const res = await fetch(`/api/sync/portal?${params.toString()}`, { method: "POST" });
+    const res = await fetch(`${API_BASE}/api/sync/portal?${params.toString()}`, { method: "POST" });
     const data = await res.json();
     if (data.status === "success") {
       showToast(data.message, "success");
@@ -1006,7 +1007,7 @@ function exportData(format = "csv") {
   if (status) params.set("status", status);
   if (includeStopped) params.set("include_stopped", "true");
 
-  window.open(`/api/export?${params.toString()}`, "_blank");
+  window.open(`${API_BASE}/api/export?${params.toString()}`, "_blank");
 }
 
 // Utility: Escape HTML
@@ -1023,7 +1024,7 @@ function escapeHtml(str) {
 // Load Technical Bodies dynamically
 async function loadTechnicalBodies() {
   try {
-    const res = await fetch("/api/technical-bodies");
+    const res = await fetch(`${API_BASE}/api/technical-bodies`);
     if (!res.ok) return;
     const tbs = await res.json();
     if (!Array.isArray(tbs) || tbs.length === 0) return;
