@@ -3,6 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - http_proxy=http://proxy:80
+        - https_proxy=http://proxy:80
+        - HTTP_PROXY=http://proxy:80
+        - HTTPS_PROXY=http://proxy:80
     container_name: etsi-wpm-suite
     restart: unless-stopped
     ports:

@@ -1,7 +1,14 @@
 FROM python:3.12-slim
 
-# Prevent Python from writing .pyc and enable buffer-less stdout
-ENV PYTHONDONTWRITEBYTECODE=1 \
+ARG http_proxy
+ARG https_proxy
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ENV http_proxy=${http_proxy} \
+    https_proxy=${https_proxy} \
+    HTTP_PROXY=${HTTP_PROXY} \
+    HTTPS_PROXY=${HTTPS_PROXY} \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DATA_DIR=/app/data \
     PORT=8081 \
